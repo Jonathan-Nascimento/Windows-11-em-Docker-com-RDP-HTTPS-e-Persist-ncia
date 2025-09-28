@@ -1,17 +1,8 @@
-# Windows 11 em Docker com RDP, HTTPS e Persistência
-Windows 11 em Docker com RDP, HTTPS e Persistência
-
-Que excelente ideia compartilhar essa configuração\! Usar o GitHub com um `README.md` bem estruturado é a melhor forma de documentar e permitir que outros (ou você mesmo no futuro) subam o ambiente rapidamente.
-
-Aqui está o texto formatado em **Markdown** para o seu arquivo `README.md`. Ele explica o propósito, os requisitos e os passos para iniciar o container Windows 11.
-
------
-
-## 🚀 Windows 11 em Docker com RDP, HTTPS e Persistência
+## 🚀 Windows 11 em Container Docker (via KVM/QEMU)
 
 Este repositório contém uma configuração robusta de **Docker Compose** para rodar uma instância completa do **Windows 11** dentro de um container Docker, utilizando virtualização **KVM/QEMU**.
 
-A configuração é ideal para testes isolados, ambientes de desenvolvimento que exigem Windows, ou simplesmente para ter um desktop Windows acessível via RDP e HTTPS, com recursos dedicados e persistência garantida.
+A configuração é ideal para testes isolados, ambientes de desenvolvimento que exigem Windows, ou para ter um desktop Windows acessível via RDP e HTTPS, com recursos dedicados e **persistência garantida**.
 
 -----
 
@@ -22,7 +13,7 @@ Para que o container funcione corretamente, seu sistema host (Linux, como o Linu
 1.  **Docker e Docker Compose V2:** Devem estar instalados.
 2.  **Virtualização KVM:** O módulo KVM do kernel deve estar habilitado e acessível.
       * Você pode verificar rodando `lsmod | grep kvm`.
-      * **Solução Comum:** Se precisar carregar os módulos em cada boot, adicione `kvm` e `kvm_intel` (ou `kvm_amd`) no arquivo `/etc/modules-load.d/kvm.conf`.
+      * **Carregamento Permanente:** Se necessário, adicione `kvm` e o módulo específico da sua CPU (`kvm_intel` ou `kvm_amd`) no arquivo `/etc/modules-load.d/kvm.conf`.
 
 -----
 
@@ -38,15 +29,16 @@ O arquivo `docker-compose.yml` está pronto para uso e inclui:
 | **Idioma** | `pt-br` | Idioma Português do Brasil. |
 | **Persistência** | `windows_data` | Volume nomeado para salvar o disco rígido virtual. |
 
-### 🚨 Atenção: Senha
+### 🔑 Credenciais Padrão (Configuradas no YML)
 
-Antes de subir o container, **ajuste a senha** na variável de ambiente `RDP_PASSWORD` para uma senha forte.
+As credenciais do RDP estão definidas na variável `RDP_PASSWORD` do `docker-compose.yml`:
 
 ```yaml
 # Trecho do docker-compose.yml
 environment:
   # ...
-  RDP_PASSWORD: "SuaSenhaMuitoSegura123!" # <--- OBRIGATÓRIO ALTERAR!
+  # Senha para o usuário padrão 'docker'
+  RDP_PASSWORD: "admin" 
 ```
 
 -----
@@ -62,29 +54,38 @@ environment:
 docker compose up -d
 ```
 
-### Acesso ao Windows 11
+-----
 
-Após a conclusão da instalação (que pode ser monitorada via `http://localhost:8006`), você pode se conectar:
+## 🔒 Acesso ao Windows 11
 
-| Protocolo | Endereço | Credenciais |
+Após a conclusão da instalação (que pode ser monitorada via `http://localhost:8006`), utilize um cliente de Área de Trabalho Remota para se conectar.
+
+### Detalhes do Login RDP
+
+| Campo | Valor | Observação |
 | :--- | :--- | :--- |
-| **RDP** | `localhost:3389` | **Usuário:** `docker` / **Senha:** (O valor de `RDP_PASSWORD`) |
-| **HTTPS** | `https://localhost` | Acessa serviços rodando na porta 443 do Windows. |
+| **Endereço** | `localhost:3389` | A porta `3389` é mapeada diretamente para a máquina virtual. |
+| **Usuário Padrão** | **`docker`** | Este nome de usuário é **fixo** pelo script de inicialização do container. |
+| **Senha** | **`admin`** | Senha definida na variável `RDP_PASSWORD` do `yml`. |
 
-### Parar e Manter os Dados
+### Outros Acessos
 
-Para desligar o container de forma segura, mantendo todos os seus dados e a instalação do Windows no volume persistente:
-
-```bash
-docker compose stop
-```
+| Protocolo | Endereço |
+| :--- | :--- |
+| **Web VNC (Monitoramento)** | `http://localhost:8006` |
+| **HTTPS (Serviço Web)** | `https://localhost` | (Acessa serviços rodando na porta 443 do Windows.) |
 
 -----
 
-## Mapeamento de Portas Detalhado
+## Gerenciamento e Persistência de Dados
 
-O `docker-compose.yml` mapeia as seguintes portas do host para o container:
+Todos os dados da instalação do Windows (o disco virtual VHD) são salvos permanentemente no **volume nomeado** do Docker: `windows_data`.
 
-  * **`3389` (TCP/UDP):** RDP (Remote Desktop Protocol)
-  * **`443` (TCP):** HTTPS (para qualquer serviço web que você queira rodar no Windows)
-  * **`8006` (TCP):** VNC/Web GUI (para monitorar a instalação ou usar como fallback)
+  * **Parar:** Para desligar o container de forma segura, use:
+    ```bash
+    docker compose stop
+    ```
+  * **Remover (CUIDADO - Perde Todos os Dados):** Para remover o container **e apagar todos os dados** (incluindo o disco virtual do Windows), use o comando com o flag `-v`:
+    ```bash
+    docker compose down -v
+    ```
