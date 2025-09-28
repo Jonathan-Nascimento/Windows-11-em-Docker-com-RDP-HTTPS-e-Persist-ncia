@@ -1,4 +1,4 @@
-# Windows-11-em-Docker-com-RDP-HTTPS-e-Persist-ncia
+# Windows 11 em Docker com RDP, HTTPS e Persistência
 Windows 11 em Docker com RDP, HTTPS e Persistência
 
 Que excelente ideia compartilhar essa configuração\! Usar o GitHub com um `README.md` bem estruturado é a melhor forma de documentar e permitir que outros (ou você mesmo no futuro) subam o ambiente rapidamente.
