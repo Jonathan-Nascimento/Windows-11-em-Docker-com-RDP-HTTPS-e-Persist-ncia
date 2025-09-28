@@ -20,8 +20,8 @@ services:
       # Idioma da Instalação do Windows
       LANGUAGE: "pt-br" # Português do Brasil (Altere se necessário)
       
-      # Senha para o usuário RDP. O nome de usuário é fixo como 'docker'.
-      RDP_PASSWORD: "SuaSenhaMuitoSegura123!" # <--- OBRIGATÓRIO ALTERAR!
+      # SENHA DEFINIDA: Para o usuário padrão 'docker'
+      RDP_PASSWORD: "admin"
       
     # ----------------------------------------------------
     # PERSISTÊNCIA E ACESSO (Portas)
