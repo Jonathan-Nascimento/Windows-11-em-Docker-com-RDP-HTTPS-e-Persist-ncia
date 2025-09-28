@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  windows:
+    # Imagem do projeto que roda o Windows via KVM/QEMU
+    image: dockurr/windows
+    container_name: windows
+    
+    # ----------------------------------------------------
+    # CONFIGURAÇÕES DE RECURSOS, IDIOMA E SENHA
+    # ----------------------------------------------------
+    environment:
+      # Versão do Windows a ser instalada: "11" (ou "10")
+      VERSION: "11"  
+      
+      # Recursos da Máquina Virtual
+      CPU_CORES: "4"    # Defina o número de núcleos de CPU
+      RAM_SIZE: "8G"    # Defina o tamanho da RAM (ex: 8G para 8 Gigabytes)
+      
+      # Idioma da Instalação do Windows
+      LANGUAGE: "pt-br" # Português do Brasil (Altere se necessário)
+      
+      # Senha para o usuário RDP. O nome de usuário é fixo como 'docker'.
+      RDP_PASSWORD: "SuaSenhaMuitoSegura123!" # <--- OBRIGATÓRIO ALTERAR!
+      
+    # ----------------------------------------------------
+    # PERSISTÊNCIA E ACESSO (Portas)
+    # ----------------------------------------------------
+    
+    # Volume de Persistência: Salva a instalação do Windows e todos os dados.
+    volumes:
+      - windows_data:/storage
+      
+    # Mapeamento de Portas (Host:Container)
+    ports:
+      # RDP: Acesso Principal via 'localhost:3389'
+      - 3389:3389/tcp
+      - 3389:3389/udp
+      
+      # HTTPS: Porta 443 do Windows (Exemplo: para acessar um IIS/Nginx local)
+      - 443:443
+      
+      # VNC/Web GUI: Usado para acompanhar a instalação
+      - 8006:8006
+      
+    # ----------------------------------------------------
+    # REQUISITOS DO KVM (Virtualização)
+    # ----------------------------------------------------
+    devices:
+      # O KVM é essencial para rodar o SO
+      - /dev/kvm
+      # O TUN é necessário para a rede
+      - /dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      
+    # Políticas de Reinicialização
+    restart: always
+    stop_grace_period: 2m
+
+# ----------------------------------------------------
+# DEFINIÇÃO DOS VOLUMES
+# ----------------------------------------------------
+volumes:
+  # Volume Nomeado para dados persistentes do Windows
+  windows_data:
+    driver: local
